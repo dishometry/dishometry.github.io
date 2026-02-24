@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Счетчик калорий (Рецепт)</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #e1e4e8;
+            --danger-color: #e74c3c;
+            --warning-bg: #fff3cd;
+            --warning-text: #856404;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Grid Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: minmax(200px, 3fr) 90px 70px 60px 60px 60px 40px;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-row {
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        .header-row span:first-child {
+            text-align: left;
+        }
+
+        .product-row {
+            margin-bottom: 8px;
+            position: relative; /* For autocomplete positioning */
+        }
+
+        .product-row input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .product-row input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .product-row input[readonly] {
+            background-color: #f8f9fa;
+            border: none;
+            text-align: center;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .product-row input.warning {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger-color);
+        }
+
+        .controls {
+            margin-top: 20px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .btn-add {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            align-self: flex-start;
+            transition: opacity 0.2s;
+        }
+
+        .btn-add:hover {
+            opacity: 0.9;
+        }
+
+        .summary-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 10px;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #555;
+            display: block;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .cooked-weight-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .cooked-weight-input {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        /* Autocomplete */
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-width: 100%; /* Match input width */
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 0 0 6px 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
+        .autocomplete-active {
+            background-color: DodgerBlue !important; 
+            color: #ffffff; 
+        }
+
+        /* Mobile adaptation */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr 70px 40px; /* Simplified for mobile */
+                gap: 8px;
+            }
+            .header-row span:nth-child(n+4), 
+            .product-row input:nth-child(n+4) {
+                display: none; /* Hide detailed macros on very small screens or make scrollable */
+            }
+        }
+
+        /* Footer & Help Section */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 14px;
+            color: #777;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .footer-link {
+            cursor: pointer;
+            text-decoration: underline;
+            color: var(--primary-color);
+            background: none;
+            border: none;
+            font-size: inherit;
+            padding: 0;
+        }
+
+        .help-content {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .help-content ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Калькулятор калорийности</h1>
+
+    <div class="grid-container header-row">
+        <span>Продукт</span>
+        <span>Вес (г)</span>
+        <span>Ккал</span>
+        <span>Б</span>
+        <span>Ж</span>
+        <span>У</span>
+        <span></span>
+    </div>
+
+    <div id="products-list">
+        <!-- Rows will be injected here -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-add" id="add-btn">+ Добавить продукт</button>
+
+        <div class="summary-section">
+            <!-- Total Ingredients -->
+            <div class="summary-card">
+                <span class="summary-title">Итого (Сырые ингредиенты)</span>
+                <div class="summary-row">
+                    <span>Вес:</span>
+                    <span id="total-raw-weight" class="summary-value">0 г</span>
+                </div>
+                <div class="summary-row">
+                    <span>Ккал:</span>
+                    <span id="total-kcal" class="summary-value">0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Б / Ж / У:</span>
+                    <span class="summary-value">
+                        <span id="total-p">0</span> / 
+                        <span id="total-f">0</span> / 
+                        <span id="total-c">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Final Dish (Per 100g) -->
+            <div class="summary-card" style="background-color: #e3f2fd; border-color: #90caf9;">
+                <span class="summary-title">Готовое блюдо (на 100г)</span>
+                
+                <div class="cooked-weight-container">
+                    <label for="cooked-weight">Вес готового блюда (г):</label>
+                    <input type="number" id="cooked-weight" class="cooked-weight-input" placeholder="Не указан">
+                </div>
+
+                <div class="summary-row">
+                    <span>Ккал:</span>
+                    <span id="final-kcal" class="summary-value" style="font-size: 1.2em; color: var(--primary-color);">0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Б / Ж / У:</span>
+                    <span class="summary-value">
+                        <span id="final-p">0</span> / 
+                        <span id="final-f">0</span> / 
+                        <span id="final-c">0</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-links">
+            <button class="footer-link" id="help-toggle">❓ Как использовать?</button>
+            <button class="footer-link" id="error-toggle">🐞 Нашли ошибку?</button>
+            <button class="footer-link" id="idea-toggle">💡 Есть идея?</button>
+        </div>
+
+        <div id="help-section" class="help-content" style="display: none;">
+            <strong>Основные возможности:</strong>
+            <ul>
+                <li><strong>Автоподбор:</strong> Начните вводить название, чтобы выбрать продукт из базы.</li>
+                <li><strong>Свои значения:</strong> Можно ввести <code>Название (Ккал/Б/Ж/У)</code>, например: <i>Суп (150/5/3/10)</i>.</li>
+                <li><strong>Масштабирование:</strong> Введите <code>Название (Ккал)</code>, чтобы пересчитать БЖУ продукта из базы под нужную калорийность.</li>
+                <li><strong>Готовое блюдо:</strong> Укажите вес после готовки, чтобы узнать калорийность 100г финального продукта.</li>
+                <li><strong>Сохранение:</strong> Ссылка в браузере обновляется автоматически — просто скопируйте её, чтобы сохранить рецепт.</li>
+            </ul>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // --- Database ---
+    const DB = [
+        // --- КРУПЫ, МАКАРОНЫ, БОБОВЫЕ (Сухой вес) ---
+        { name: "Гречка (ядрица)", protein: 12.6, fat: 3.3, carbs: 62.1, kcal: 313 },
+        { name: "Гречка зеленая", protein: 13, fat: 3.4, carbs: 61, kcal: 310 },
+        { name: "Рис белый (шлифованный)", protein: 7, fat: 0.6, carbs: 77.3, kcal: 344 },
+        { name: "Рис Басмати", protein: 7.5, fat: 2.6, carbs: 76, kcal: 350 },
+        { name: "Рис бурый (нешлифованный)", protein: 7.4, fat: 2.2, carbs: 72, kcal: 337 },
+        { name: "Рис красный", protein: 7.5, fat: 2.5, carbs: 69, kcal: 330 },
+        { name: "Рис дикий", protein: 14, fat: 0.5, carbs: 70, kcal: 340 },
+        { name: "Овсянка (геркулес)", protein: 12.3, fat: 6.1, carbs: 59.5, kcal: 342 },
+        { name: "Овсянка (длительной варки)", protein: 13, fat: 6.5, carbs: 60, kcal: 350 },
+        { name: "Киноа", protein: 14.1, fat: 6.1, carbs: 57.2, kcal: 368 },
+        { name: "Булгур", protein: 12.3, fat: 1.3, carbs: 57.6, kcal: 342 },
+        { name: "Кускус", protein: 12, fat: 0.6, carbs: 77, kcal: 376 },
+        { name: "Пшено", protein: 11.5, fat: 3.3, carbs: 66.5, kcal: 348 },
+        { name: "Перловка", protein: 9.3, fat: 1.1, carbs: 66.9, kcal: 320 },
+        { name: "Полба", protein: 14.5, fat: 2.4, carbs: 61, kcal: 339 },
+        { name: "Макароны (твердые сорта)", protein: 10.4, fat: 1.1, carbs: 71.5, kcal: 344 },
+        { name: "Макароны (цельнозерновые)", protein: 13, fat: 2.5, carbs: 65, kcal: 350 },
+        { name: "Чечевица красная", protein: 24, fat: 1.5, carbs: 46, kcal: 314 },
+        { name: "Чечевица зеленая", protein: 24.5, fat: 1.2, carbs: 50, kcal: 325 },
+        { name: "Нури (турецкий горох)", protein: 20.1, fat: 4.3, carbs: 46.2, kcal: 309 },
+        { name: "Фасоль красная", protein: 22, fat: 1.5, carbs: 48, kcal: 310 },
+        { name: "Фасоль белая", protein: 22.3, fat: 1.7, carbs: 45, kcal: 300 },
+        { name: "Горох колотый", protein: 20.5, fat: 2, carbs: 49.5, kcal: 298 },
+        { name: "Маш (бобы мунг)", protein: 23.5, fat: 2, carbs: 46, kcal: 300 },
+        { name: "Соя (бобы)", protein: 34.9, fat: 17.3, carbs: 17.3, kcal: 381 },
+
+        // --- МЯСО И ПТИЦА (Сырое) ---
+        { name: "Куриное филе (грудка)", protein: 23.6, fat: 1.9, carbs: 0.4, kcal: 113 },
+        { name: "Куриное бедро (без кожи)", protein: 19.7, fat: 8.5, carbs: 0, kcal: 160 },
+        { name: "Куриная голень (без кожи)", protein: 18.5, fat: 7, carbs: 0, kcal: 145 },
+        { name: "Куриные крылья", protein: 18, fat: 15, carbs: 0, kcal: 210 },
+        { name: "Индейка (филе грудки)", protein: 23, fat: 1.5, carbs: 0, kcal: 110 },
+        { name: "Индейка (филе бедра)", protein: 19, fat: 5, carbs: 0, kcal: 144 },
+        { name: "Говядина (постная)", protein: 20, fat: 3.5, carbs: 0, kcal: 115 },
+        { name: "Говядина (вырезка)", protein: 20, fat: 8, carbs: 0, kcal: 158 },
+        { name: "Говядина (фарш постный)", protein: 19, fat: 10, carbs: 0, kcal: 170 },
+        { name: "Телятина", protein: 19.7, fat: 1.2, carbs: 0, kcal: 97 },
+        { name: "Кролик", protein: 21, fat: 8, carbs: 0, kcal: 156 },
+        { name: "Печень куриная", protein: 19, fat: 6.3, carbs: 0.6, kcal: 137 },
+        { name: "Печень говяжья", protein: 17.4, fat: 3.1, carbs: 0, kcal: 98 },
+        { name: "Сердечки куриные", protein: 16, fat: 10, carbs: 0.5, kcal: 159 },
+        { name: "Желудки куриные", protein: 18, fat: 2, carbs: 0.6, kcal: 95 },
+        { name: "Свинина (вырезка)", protein: 19, fat: 7, carbs: 0, kcal: 143 },
+        { name: "Свинина (карбонад)", protein: 16, fat: 8, carbs: 0, kcal: 135 },
+        { name: "Баранина (нежирная)", protein: 16.5, fat: 15, carbs: 0, kcal: 203 },
+        { name: "Утка (филе без кожи)", protein: 19, fat: 6, carbs: 0, kcal: 135 },
+
+        // --- РЫБА И МОРЕПРОДУКТЫ (Сырое) ---
+        { name: "Лосось (семга)", protein: 20, fat: 15, carbs: 0, kcal: 220 },
+        { name: "Форель", protein: 19, fat: 5, carbs: 0, kcal: 121 },
+        { name: "Горбуша", protein: 20.5, fat: 6.5, carbs: 0, kcal: 142 },
+        { name: "Кета", protein: 19, fat: 5.6, carbs: 0, kcal: 127 },
+        { name: "Тунец (филе)", protein: 24, fat: 1, carbs: 0, kcal: 101 },
+        { name: "Треска", protein: 17.5, fat: 0.2, carbs: 0, kcal: 73 },
+        { name: "Минтай", protein: 16, fat: 0.9, carbs: 0, kcal: 72 },
+        { name: "Хек", protein: 16.5, fat: 1.8, carbs: 0, kcal: 86 },
+        { name: "Тилапия", protein: 20, fat: 1.7, carbs: 0, kcal: 96 },
+        { name: "Судак", protein: 18.4, fat: 1.1, carbs: 0, kcal: 84 },
+        { name: "Скумбрия", protein: 18, fat: 13, carbs: 0, kcal: 191 },
+        { name: "Сельдь (свежая)", protein: 17.7, fat: 19.5, carbs: 0, kcal: 248 },
+        { name: "Камбала", protein: 16, fat: 3, carbs: 0, kcal: 90 },
+        { name: "Креветки", protein: 19, fat: 1.5, carbs: 0, kcal: 95 },
+        { name: "Кальмар (филе)", protein: 18, fat: 2.2, carbs: 2, kcal: 100 },
+        { name: "Мидии", protein: 11.5, fat: 2, carbs: 3.3, kcal: 77 },
+        { name: "Морской коктейль", protein: 15, fat: 1.5, carbs: 1, kcal: 85 },
+        { name: "Икра красная", protein: 32, fat: 15, carbs: 0, kcal: 263 },
+        { name: "Печень трески (консервы)", protein: 4, fat: 66, carbs: 0, kcal: 613 },
+        { name: "Тунец в с/с (консервы)", protein: 21, fat: 1, carbs: 0, kcal: 96 },
+
+        // --- МОЛОЧНЫЕ ПРОДУКТЫ И ЯЙЦА ---
+        { name: "Яйцо куриное", protein: 12.7, fat: 10.9, carbs: 0.7, kcal: 157 },
+        { name: "Белок яичный", protein: 11, fat: 0, carbs: 0, kcal: 44 },
+        { name: "Желток яичный", protein: 16, fat: 31, carbs: 1, kcal: 352 },
+        { name: "Яйцо перепелиное", protein: 11.9, fat: 13.1, carbs: 0.6, kcal: 168 },
+        { name: "Творог 0% (обезжиренный)", protein: 18, fat: 0.5, carbs: 1.8, kcal: 85 },
+        { name: "Творог 2%", protein: 18, fat: 2, carbs: 1.8, kcal: 103 },
+        { name: "Творог 5%", protein: 17.2, fat: 5, carbs: 1.8, kcal: 121 },
+        { name: "Творог 9%", protein: 16, fat: 9, carbs: 2, kcal: 159 },
+        { name: "Творог мягкий 0%", protein: 11, fat: 0.1, carbs: 3.5, kcal: 60 },
+        { name: "Творог мягкий 5%", protein: 10, fat: 5, carbs: 3.5, kcal: 100 },
+        { name: "Творог зерненый (сливки)", protein: 13, fat: 5, carbs: 2.8, kcal: 105 },
+        { name: "Молоко 1.5%", protein: 2.9, fat: 1.5, carbs: 4.7, kcal: 44 },
+        { name: "Молоко 2.5%", protein: 2.9, fat: 2.5, carbs: 4.8, kcal: 54 },
+        { name: "Молоко 3.2%", protein: 2.9, fat: 3.2, carbs: 4.7, kcal: 60 },
+        { name: "Кефир 1%", protein: 2.8, fat: 1, carbs: 4, kcal: 40 },
+        { name: "Кефир 2.5%", protein: 2.8, fat: 2.5, carbs: 4, kcal: 53 },
+        { name: "Ряженка 2.5%", protein: 2.9, fat: 2.5, carbs: 4.2, kcal: 54 },
+        { name: "Ряженка 4%", protein: 2.8, fat: 4, carbs: 4.2, kcal: 67 },
+        { name: "Йогурт натуральный (греческий)", protein: 8, fat: 2, carbs: 3.5, kcal: 66 },
+        { name: "Йогурт питьевой натуральный", protein: 3, fat: 2.5, carbs: 4.5, kcal: 52 },
+        { name: "Сметана 10%", protein: 3, fat: 10, carbs: 2.9, kcal: 115 },
+        { name: "Сметана 15%", protein: 2.6, fat: 15, carbs: 3, kcal: 160 },
+        { name: "Сметана 20%", protein: 2.5, fat: 20, carbs: 3.4, kcal: 206 },
+        { name: "Сыр Российский", protein: 24.1, fat: 29.5, carbs: 0.3, kcal: 363 },
+        { name: "Сыр Голландский", protein: 26, fat: 26.8, carbs: 0, kcal: 352 },
+        { name: "Сыр Гауда", protein: 25, fat: 27, carbs: 2, kcal: 356 },
+        { name: "Сыр Маасдам", protein: 23, fat: 26, carbs: 0, kcal: 350 },
+        { name: "Сыр Пармезан", protein: 35, fat: 25, carbs: 0, kcal: 392 },
+        { name: "Сыр Моцарелла (шарики)", protein: 18, fat: 18, carbs: 2, kcal: 240 },
+        { name: "Сыр Моцарелла (твердая)", protein: 24, fat: 22, carbs: 0, kcal: 300 },
+        { name: "Сыр Адыгейский", protein: 19, fat: 14, carbs: 1.5, kcal: 240 },
+        { name: "Сыр Фета/Брынза", protein: 14, fat: 21, carbs: 0, kcal: 260 },
+        { name: "Сыр Сулугуни", protein: 20, fat: 22, carbs: 0, kcal: 290 },
+        { name: "Сыр Рикотта", protein: 11, fat: 13, carbs: 3, kcal: 174 },
+        { name: "Сыр Тофу (соевый)", protein: 8, fat: 4.8, carbs: 1.9, kcal: 76 },
+        { name: "Масло сливочное 82.5%", protein: 0.6, fat: 82.5, carbs: 0.8, kcal: 748 },
+        { name: "Масло Гхи (топленое)", protein: 0.2, fat: 99, carbs: 0, kcal: 892 },
+
+        // --- ОВОЩИ, ГРИБЫ И ЗЕЛЕНЬ (Свежие) ---
+        { name: "Огурец", protein: 0.8, fat: 0.1, carbs: 2.8, kcal: 15 },
+        { name: "Помидор", protein: 0.6, fat: 0.2, carbs: 4.2, kcal: 20 },
+        { name: "Помидоры Черри", protein: 0.8, fat: 0.2, carbs: 3, kcal: 18 },
+        { name: "Перец болгарский красный", protein: 1.3, fat: 0.1, carbs: 5.3, kcal: 27 },
+        { name: "Перец болгарский желтый", protein: 1.3, fat: 0.1, carbs: 5.2, kcal: 27 },
+        { name: "Перец болгарский зеленый", protein: 1.3, fat: 0.1, carbs: 4.7, kcal: 26 },
+        { name: "Кабачок", protein: 0.6, fat: 0.3, carbs: 4.6, kcal: 24 },
+        { name: "Баклажан", protein: 1.2, fat: 0.1, carbs: 4.5, kcal: 24 },
+        { name: "Капуста белокочанная", protein: 1.8, fat: 0.1, carbs: 4.7, kcal: 27 },
+        { name: "Капуста пекинская", protein: 1.2, fat: 0.2, carbs: 2.0, kcal: 16 },
+        { name: "Капуста цветная", protein: 2.5, fat: 0.3, carbs: 5.4, kcal: 30 },
+        { name: "Брокколи", protein: 2.8, fat: 0.4, carbs: 6.6, kcal: 34 },
+        { name: "Брюссельская капуста", protein: 3.8, fat: 0.3, carbs: 5.9, kcal: 43 },
+        { name: "Картофель", protein: 2, fat: 0.4, carbs: 16.3, kcal: 77 },
+        { name: "Батат (сладкий картофель)", protein: 1.6, fat: 0.1, carbs: 20, kcal: 86 },
+        { name: "Морковь", protein: 1.3, fat: 0.1, carbs: 6.9, kcal: 32 },
+        { name: "Свекла", protein: 1.5, fat: 0.1, carbs: 8.8, kcal: 43 },
+        { name: "Лук репчатый", protein: 1.4, fat: 0.2, carbs: 8.2, kcal: 41 },
+        { name: "Лук зеленый", protein: 1.3, fat: 0, carbs: 4.6, kcal: 19 },
+        { name: "Чеснок", protein: 6.5, fat: 0.5, carbs: 29.9, kcal: 149 },
+        { name: "Редис", protein: 1.2, fat: 0.1, carbs: 3.4, kcal: 19 },
+        { name: "Редька", protein: 1.9, fat: 0.2, carbs: 6.7, kcal: 36 },
+        { name: "Тыква", protein: 1, fat: 0.1, carbs: 4.4, kcal: 22 },
+        { name: "Сельдерей (стебель)", protein: 0.9, fat: 0.1, carbs: 2.1, kcal: 13 },
+        { name: "Шпинат", protein: 2.9, fat: 0.3, carbs: 2, kcal: 23 },
+        { name: "Руккола", protein: 2.6, fat: 0.7, carbs: 2.1, kcal: 25 },
+        { name: "Салат Айсберг", protein: 0.9, fat: 0.1, carbs: 1.8, kcal: 14 },
+        { name: "Салат Листовой", protein: 1.2, fat: 0.3, carbs: 1.3, kcal: 15 },
+        { name: "Спаржа", protein: 2.2, fat: 0.1, carbs: 3.9, kcal: 20 },
+        { name: "Фасоль стручковая", protein: 2, fat: 0.2, carbs: 3.6, kcal: 24 },
+        { name: "Зеленый горошек (свежий)", protein: 5, fat: 0.2, carbs: 13, kcal: 73 },
+        { name: "Кукуруза (зерна)", protein: 3.5, fat: 2.8, carbs: 15.6, kcal: 101 },
+        { name: "Шампиньоны", protein: 4.3, fat: 1, carbs: 0.1, kcal: 27 },
+        { name: "Вешенки", protein: 3.3, fat: 0.4, carbs: 4.2, kcal: 33 },
+        { name: "Белые грибы", protein: 3.7, fat: 1.7, carbs: 1.1, kcal: 34 },
+        { name: "Авокадо", protein: 2, fat: 14.7, carbs: 1.8, kcal: 160 },
+        { name: "Маслины/Оливки", protein: 1, fat: 11, carbs: 5, kcal: 115 },
+
+        // --- ФРУКТЫ И ЯГОДЫ ---
+        { name: "Яблоко", protein: 0.4, fat: 0.4, carbs: 9.8, kcal: 47 },
+        { name: "Груша", protein: 0.4, fat: 0.3, carbs: 10.3, kcal: 47 },
+        { name: "Банан", protein: 1.5, fat: 0.5, carbs: 21, kcal: 96 },
+        { name: "Апельсин", protein: 0.9, fat: 0.2, carbs: 8.1, kcal: 43 },
+        { name: "Мандарин", protein: 0.8, fat: 0.2, carbs: 7.5, kcal: 38 },
+        { name: "Грейпфрут", protein: 0.7, fat: 0.2, carbs: 6.5, kcal: 35 },
+        { name: "Лимон", protein: 0.9, fat: 0.1, carbs: 3, kcal: 34 },
+        { name: "Лайм", protein: 0.7, fat: 0.2, carbs: 7.7, kcal: 30 },
+        { name: "Киви", protein: 1.1, fat: 0.5, carbs: 14.7, kcal: 61 },
+        { name: "Персик", protein: 0.9, fat: 0.1, carbs: 9.5, kcal: 45 },
+        { name: "Нектарин", protein: 1.1, fat: 0.3, carbs: 10.5, kcal: 44 },
+        { name: "Абрикос", protein: 0.9, fat: 0.1, carbs: 9, kcal: 44 },
+        { name: "Слива", protein: 0.8, fat: 0.3, carbs: 9.6, kcal: 49 },
+        { name: "Хурма", protein: 0.5, fat: 0.4, carbs: 15.3, kcal: 67 },
+        { name: "Виноград зеленый", protein: 0.6, fat: 0.2, carbs: 16, kcal: 69 },
+        { name: "Виноград черный", protein: 0.6, fat: 0.2, carbs: 17, kcal: 72 },
+        { name: "Ананас", protein: 0.4, fat: 0.2, carbs: 11.8, kcal: 52 },
+        { name: "Манго", protein: 0.5, fat: 0.3, carbs: 15, kcal: 65 },
+        { name: "Дыня", protein: 0.6, fat: 0.3, carbs: 7.4, kcal: 35 },
+        { name: "Арбуз", protein: 0.6, fat: 0.1, carbs: 5.8, kcal: 27 },
+        { name: "Клубника", protein: 0.8, fat: 0.4, carbs: 5.7, kcal: 41 },
+        { name: "Малина", protein: 0.8, fat: 0.5, carbs: 8.3, kcal: 46 },
+        { name: "Смородина черная", protein: 1, fat: 0.4, carbs: 7.3, kcal: 44 },
+        { name: "Черника", protein: 1.1, fat: 0.4, carbs: 7.6, kcal: 44 },
+        { name: "Голубика", protein: 1, fat: 0.5, carbs: 6.5, kcal: 39 },
+        { name: "Вишня", protein: 0.8, fat: 0.2, carbs: 10.6, kcal: 52 },
+        { name: "Черешня", protein: 1.1, fat: 0.4, carbs: 10.6, kcal: 52 },
+        { name: "Клюква", protein: 0.5, fat: 0.2, carbs: 3.7, kcal: 26 },
+        { name: "Гранат", protein: 0.7, fat: 0.6, carbs: 14.5, kcal: 72 },
+        { name: "Помело", protein: 0.8, fat: 0, carbs: 9.6, kcal: 38 },
+        { name: "Инжир свежий", protein: 0.7, fat: 0.2, carbs: 12, kcal: 54 },
+
+        // --- ОРЕХИ, СЕМЕНА, СУХОФРУКТЫ ---
+        { name: "Грецкий орех", protein: 15.2, fat: 65.2, carbs: 7, kcal: 654 },
+        { name: "Миндаль", protein: 18.6, fat: 57.7, carbs: 13, kcal: 645 },
+        { name: "Фундук", protein: 16.1, fat: 66.9, carbs: 9.9, kcal: 704 },
+        { name: "Кешью", protein: 25.7, fat: 54.1, carbs: 13.2, kcal: 643 },
+        { name: "Арахис", protein: 26.3, fat: 45.2, carbs: 9.9, kcal: 551 },
+        { name: "Фисташки", protein: 20, fat: 50, carbs: 7, kcal: 556 },
+        { name: "Кедровый орех", protein: 13.7, fat: 68.4, carbs: 13.1, kcal: 673 },
+        { name: "Бразильский орех", protein: 14, fat: 66, carbs: 4.8, kcal: 656 },
+        { name: "Семечки подсолнуха", protein: 20.7, fat: 52.9, carbs: 3.4, kcal: 578 },
+        { name: "Семечки тыквенные", protein: 24.5, fat: 45.8, carbs: 4.7, kcal: 556 },
+        { name: "Кунжут", protein: 19.4, fat: 48.7, carbs: 12.2, kcal: 565 },
+        { name: "Семена льна", protein: 18, fat: 42, carbs: 1.6, kcal: 534 },
+        { name: "Семена чиа", protein: 16.5, fat: 30.7, carbs: 42, kcal: 486 },
+        { name: "Мак", protein: 17.5, fat: 47.5, carbs: 14.5, kcal: 556 },
+        { name: "Кокос (мякоть)", protein: 3.3, fat: 33.5, carbs: 6.2, kcal: 354 },
+        { name: "Изюм", protein: 2.9, fat: 0.6, carbs: 66, kcal: 264 },
+        { name: "Курага", protein: 5.2, fat: 0.3, carbs: 51, kcal: 215 },
+        { name: "Чернослив", protein: 2.3, fat: 0.7, carbs: 57.5, kcal: 231 },
+        { name: "Финики", protein: 2.5, fat: 0.5, carbs: 69.2, kcal: 274 },
+        { name: "Инжир сушеный", protein: 3.1, fat: 0.8, carbs: 57.9, kcal: 257 },
+        { name: "Яблоки сушеные", protein: 2.2, fat: 0.1, carbs: 59, kcal: 231 },
+
+        // --- ХЛЕБ И ХЛЕБЦЫ ---
+        { name: "Хлеб пшеничный (белый)", protein: 8.1, fat: 1.3, carbs: 48.8, kcal: 242 },
+        { name: "Хлеб ржаной (черный)", protein: 6.6, fat: 1.2, carbs: 33.4, kcal: 174 },
+        { name: "Хлеб Бородинский", protein: 6.8, fat: 1.3, carbs: 40.7, kcal: 208 },
+        { name: "Хлеб цельнозерновой", protein: 9, fat: 2.5, carbs: 42, kcal: 230 },
+        { name: "Хлебцы гречневые", protein: 14, fat: 2.5, carbs: 60, kcal: 320 },
+        { name: "Хлебцы рисовые", protein: 8, fat: 2, carbs: 75, kcal: 350 },
+        { name: "Лаваш армянский (тонкий)", protein: 7.9, fat: 1, carbs: 47.6, kcal: 236 },
+        { name: "Тортилья пшеничная", protein: 8, fat: 8, carbs: 50, kcal: 300 },
+        { name: "Батон нарезной", protein: 7.5, fat: 2.9, carbs: 51.4, kcal: 264 },
+
+        // --- МАСЛА, СОУСЫ, СЛАДОСТИ ---
+        { name: "Масло подсолнечное", protein: 0, fat: 99.9, carbs: 0, kcal: 899 },
+        { name: "Масло оливковое", protein: 0, fat: 99.8, carbs: 0, kcal: 898 },
+        { name: "Масло льняное", protein: 0, fat: 99.8, carbs: 0, kcal: 898 },
+        { name: "Масло кокосовое", protein: 0, fat: 99.9, carbs: 0, kcal: 899 },
+        { name: "Соевый соус", protein: 6, fat: 0, carbs: 6, kcal: 50 },
+        { name: "Томатная паста", protein: 4.8, fat: 0, carbs: 19, kcal: 102 },
+        { name: "Мед", protein: 0.8, fat: 0, carbs: 80.3, kcal: 328 },
+        { name: "Сахар", protein: 0, fat: 0, carbs: 99.7, kcal: 398 },
+        { name: "Шоколад горький 70%+", protein: 8, fat: 39, carbs: 35, kcal: 530 },
+        { name: "Шоколад молочный", protein: 6, fat: 32, carbs: 54, kcal: 540 },
+        { name: "Пастила", protein: 0.5, fat: 0, carbs: 80, kcal: 324 },
+        { name: "Зефир", protein: 0.8, fat: 0.1, carbs: 79, kcal: 326 },
+        { name: "Какао порошок", protein: 24, fat: 15, carbs: 10, kcal: 289 },
+        { name: "Протеин (Whey)", protein: 75, fat: 5, carbs: 5, kcal: 370 },
+
+        // --- НАПИТКИ ---
+        { name: "Вода", protein: 0.0, fat: 0.0, carbs: 0.0, kcal: 0 },
+        { name: "Чай (без сахара)", protein: 0.0, fat: 0.0, carbs: 0.0, kcal: 0 },
+        { name: "Кофе (без сахара)", protein: 0.2, fat: 0.0, carbs: 0.0, kcal: 2 },
+        { name: "Капучино (без сахара)", protein: 1.8, fat: 1.5, carbs: 3.8, kcal: 35 },
+        { name: "Латте (без сахара)", protein: 2.8, fat: 2.0, carbs: 4.7, kcal: 45 },
+        { name: "Цикорий (напиток)", protein: 0.1, fat: 0.0, carbs: 2.8, kcal: 11 },
+        { name: "Какао на молоке", protein: 3.5, fat: 3.0, carbs: 10.0, kcal: 80 },
+        { name: "Сок Апельсиновый (свежевыжатый)", protein: 0.7, fat: 0.2, carbs: 13.0, kcal: 60 },
+        { name: "Сок Апельсиновый (пакетированный)", protein: 0.0, fat: 0.0, carbs: 12.0, kcal: 50 },
+        { name: "Сок Яблочный (свежевыжатый)", protein: 0.5, fat: 0.0, carbs: 14.0, kcal: 60 },
+        { name: "Сок Яблочный (пакетированный)", protein: 0.0, fat: 0.0, carbs: 11.5, kcal: 46 },
+        { name: "Сок Томатный", protein: 1.0, fat: 0.0, carbs: 3.5, kcal: 20 },
+        { name: "Сок Грейпфрутовый", protein: 0.5, fat: 0.0, carbs: 9.0, kcal: 38 },
+        { name: "Морс Клюквенный", protein: 0.0, fat: 0.0, carbs: 12.0, kcal: 50 },
+        { name: "Компот из сухофруктов (без сахара)", protein: 0.5, fat: 0.0, carbs: 15.0, kcal: 60 },
+        { name: "Квас хлебный", protein: 0.2, fat: 0.0, carbs: 5.2, kcal: 27 },
+        { name: "Молоко Миндальное", protein: 0.5, fat: 1.2, carbs: 0.1, kcal: 13 },
+        { name: "Молоко Кокосовое (напиток)", protein: 0.2, fat: 2.0, carbs: 2.0, kcal: 25 },
+        { name: "Молоко Овсяное", protein: 1.0, fat: 1.5, carbs: 6.5, kcal: 45 },
+        { name: "Молоко Соевое", protein: 3.0, fat: 1.5, carbs: 1.0, kcal: 33 },
+        { name: "Вино Сухое (красное/белое)", protein: 0.2, fat: 0.0, carbs: 0.6, kcal: 70 },
+        { name: "Вино Полусладкое", protein: 0.2, fat: 0.0, carbs: 5.0, kcal: 90 },
+        { name: "Пиво Светлое", protein: 0.5, fat: 0.0, carbs: 4.6, kcal: 43 }
+    ];
+
+    // --- State ---
+    let state = {
+        products: [], // { id, name, weight }
+        cookedWeight: null
+    };
+
+    // --- DOM Elements ---
+    const listContainer = document.getElementById('products-list');
+    const addBtn = document.getElementById('add-btn');
+    const cookedWeightInput = document.getElementById('cooked-weight');
+
+    // Totals Elements
+    const elTotalRawWeight = document.getElementById('total-raw-weight');
+    const elTotalKcal = document.getElementById('total-kcal');
+    const elTotalP = document.getElementById('total-p');
+    const elTotalF = document.getElementById('total-f');
+    const elTotalC = document.getElementById('total-c');
+
+    // Final Elements
+    const elFinalKcal = document.getElementById('final-kcal');
+    const elFinalP = document.getElementById('final-p');
+    const elFinalF = document.getElementById('final-f');
+    const elFinalC = document.getElementById('final-c');
+
+    // --- Logic ---
+
+    function generateId() {
+        return Math.random().toString(36).substr(2, 9);
+    }
+
+    function init() {
+        loadStateFromURL();
+        if (state.products.length === 0) {
+            addProductRow(); // Add one empty row by default
+        } else {
+            renderRows();
+        }
+        updateCalculation();
+    }
+
+    function addProductRow(data = { name: '', weight: 100 }) {
+        const id = generateId();
+        state.products.push({ id, ...data });
+        renderRow(state.products[state.products.length - 1]);
+        updateCalculation();
+        
+        // Focus new input
+        setTimeout(() => {
+            const row = document.getElementById(`row-${id}`);
+            if (row) {
+                const input = row.querySelector('.input-name');
+                if (input) input.focus();
+            }
+        }, 0);
+    }
+
+    function removeProductRow(id) {
+        state.products = state.products.filter(p => p.id !== id);
+        const row = document.getElementById(`row-${id}`);
+        if (row) row.remove();
+        updateCalculation();
+    }
+
+    function updateProductData(id, key, value) {
+        const product = state.products.find(p => p.id === id);
+        if (product) {
+            product[key] = value;
+            updateRowCalculations(id);
+            updateCalculation(); // Update totals
+        }
+    }
+
+    function parseNutrients(name) {
+        // Normalize
+        const cleanName = name.trim();
+        
+        // Regex 1: Exact values "Name (Kcal/P/F/C)" e.g. "Soup (150/5/3/10)"
+        // Allow spaces, float numbers
+        const regexExact = /(?:.*)\(\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\)$/;
+        const matchExact = cleanName.match(regexExact);
+
+        if (matchExact) {
+            return {
+                kcal: parseFloat(matchExact[1]),
+                protein: parseFloat(matchExact[2]),
+                fat: parseFloat(matchExact[3]),
+                carbs: parseFloat(matchExact[4]),
+                isApproximate: false,
+                isCustom: true
+            };
+        }
+
+        // Regex 2: Scaled Kcal "Name (Kcal)" e.g. "Apple (60)"
+        const regexScale = /(.*?)\s*\(\s*(\d+(?:\.\d+)?)\s*\)$/;
+        const matchScale = cleanName.match(regexScale);
+
+        if (matchScale) {
+            const baseName = matchScale[1].trim();
+            const targetKcal = parseFloat(matchScale[2]);
+            
+            // Try to find base product in DB
+            const dbProduct = DB.find(p => p.name.toLowerCase() === baseName.toLowerCase());
+
+            if (dbProduct) {
+                // Scale existing nutrients
+                // Avoid division by zero
+                const ratio = dbProduct.kcal > 0 ? targetKcal / dbProduct.kcal : 0;
+                return {
+                    kcal: targetKcal,
+                    protein: dbProduct.protein * ratio,
+                    fat: dbProduct.fat * ratio,
+                    carbs: dbProduct.carbs * ratio,
+                    isApproximate: true, // Mark as calculated/scaled
+                    isCustom: true
+                };
+            } else {
+                // Not found, just return Kcal with 0 macros
+                return {
+                    kcal: targetKcal,
+                    protein: 0,
+                    fat: 0,
+                    carbs: 0,
+                    isApproximate: true,
+                    isCustom: true
+                };
+            }
+        }
+
+        // Standard DB Lookup
+        const dbProduct = DB.find(p => p.name.toLowerCase() === cleanName.toLowerCase());
+        if (dbProduct) {
+            return { ...dbProduct, isApproximate: false, isCustom: false };
+        }
+
+        // Not found
+        return { kcal: 0, protein: 0, fat: 0, carbs: 0, isApproximate: false, isCustom: false };
+    }
+
+    function updateRowCalculations(id) {
+        const product = state.products.find(p => p.id === id);
+        if (!product) return;
+
+        const row = document.getElementById(`row-${id}`);
+        if (!row) return;
+
+        const nutrients = parseNutrients(product.name);
+        const weight = parseFloat(product.weight) || 0;
+        const ratio = weight / 100;
+
+        const elKcal = row.querySelector('.col-kcal');
+        const elP = row.querySelector('.col-p');
+        const elF = row.querySelector('.col-f');
+        const elC = row.querySelector('.col-c');
+
+        // Calculate values
+        const valKcal = nutrients.kcal * ratio;
+        const valP = nutrients.protein * ratio;
+        const valF = nutrients.fat * ratio;
+        const valC = nutrients.carbs * ratio;
+
+        // Update DOM
+        elKcal.value = valKcal.toFixed(1);
+        elP.value = valP.toFixed(1);
+        elF.value = valF.toFixed(1);
+        elC.value = valC.toFixed(1);
+
+        // Styling for approximate values
+        if (nutrients.isApproximate) {
+            [elKcal, elP, elF, elC].forEach(el => el.classList.add('warning'));
+        } else {
+            [elKcal, elP, elF, elC].forEach(el => el.classList.remove('warning'));
+        }
+        
+        // Store calculated totals in DOM element data for easy summing (or recalculate from state)
+        // We will recalculate from state in updateCalculation to be safe
+    }
+
+    function updateCalculation() {
+        let totalRawWeight = 0;
+        let totalKcal = 0;
+        let totalP = 0;
+        let totalF = 0;
+        let totalC = 0;
+
+        state.products.forEach(p => {
+            const nutrients = parseNutrients(p.name);
+            const weight = parseFloat(p.weight) || 0;
+            const ratio = weight / 100;
+
+            totalRawWeight += weight;
+            totalKcal += nutrients.kcal * ratio;
+            totalP += nutrients.protein * ratio;
+            totalF += nutrients.fat * ratio;
+            totalC += nutrients.carbs * ratio;
+        });
+
+        // Update Raw Totals UI
+        elTotalRawWeight.textContent = totalRawWeight.toFixed(0) + ' г';
+        elTotalKcal.textContent = totalKcal.toFixed(1);
+        elTotalP.textContent = totalP.toFixed(1);
+        elTotalF.textContent = totalF.toFixed(1);
+        elTotalC.textContent = totalC.toFixed(1);
+
+        // Handle Cooked Weight
+        const cookedWeight = parseFloat(state.cookedWeight);
+        const finalWeight = (cookedWeight && cookedWeight > 0) ? cookedWeight : totalRawWeight;
+
+        // Display cooked weight input value if exists
+        if (state.cookedWeight !== null && cookedWeightInput.value !== String(state.cookedWeight)) {
+             // Only update input if it differs (avoid cursor jumps) - actually handle via input event
+        }
+
+        // Calculate Final Per 100g
+        // (TotalNutrient / FinalWeight) * 100
+        if (finalWeight > 0) {
+            const factor = 100 / finalWeight;
+            elFinalKcal.textContent = (totalKcal * factor).toFixed(1);
+            elFinalP.textContent = (totalP * factor).toFixed(1);
+            elFinalF.textContent = (totalF * factor).toFixed(1);
+            elFinalC.textContent = (totalC * factor).toFixed(1);
+        } else {
+            elFinalKcal.textContent = '0';
+            elFinalP.textContent = '0';
+            elFinalF.textContent = '0';
+            elFinalC.textContent = '0';
+        }
+
+        saveStateToURL();
+    }
+
+    // --- Rendering ---
+
+    function renderRows() {
+        listContainer.innerHTML = '';
+        state.products.forEach(p => renderRow(p));
+    }
+
+    function renderRow(product) {
+        const div = document.createElement('div');
+        div.className = 'grid-container product-row';
+        div.id = `row-${product.id}`;
+        
+        div.innerHTML = `
+            <div style="position: relative;">
+                <input type="text" class="input-name" placeholder="Название продукта" value="${escapeHtml(product.name)}" data-id="${product.id}">
+                <div class="autocomplete-items" id="autocomplete-${product.id}"></div>
+            </div>
+            <input type="number" class="input-weight" placeholder="0" value="${product.weight}" data-id="${product.id}">
+            <input type="text" class="col-kcal" readonly value="0">
+            <input type="text" class="col-p" readonly value="0">
+            <input type="text" class="col-f" readonly value="0">
+            <input type="text" class="col-c" readonly value="0">
+            <button class="btn-delete" onclick="removeProductRow('${product.id}')">✕</button>
+        `;
+
+        listContainer.appendChild(div);
+
+        // Attach Listeners
+        const nameInput = div.querySelector('.input-name');
+        const weightInput = div.querySelector('.input-weight');
+
+        // Name Input
+        nameInput.addEventListener('input', (e) => {
+            updateProductData(product.id, 'name', e.target.value);
+            handleAutocomplete(e.target, product.id);
+        });
+
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', function (e) {
+            if (e.target !== nameInput) {
+                closeAutocomplete(product.id);
+            }
+        });
+
+        // Weight Input
+        weightInput.addEventListener('input', (e) => {
+            updateProductData(product.id, 'weight', parseFloat(e.target.value));
+        });
+
+        // Initial Calc for this row
+        updateRowCalculations(product.id);
+    }
+
+    // --- Autocomplete ---
+
+    function handleAutocomplete(input, id) {
+        const val = input.value;
+        closeAutocomplete(id);
+        if (!val) return;
+
+        const list = document.getElementById(`autocomplete-${id}`);
+        let matches = DB.filter(p => p.name.toLowerCase().includes(val.toLowerCase()));
+
+        if (matches.length === 0) return;
+
+        matches.forEach(match => {
+            const item = document.createElement('div');
+            // Highlight matching part
+            const regex = new RegExp(`(${val})`, "gi");
+            item.innerHTML = match.name.replace(regex, "<strong>$1</strong>");
+            item.innerHTML += `<span style="font-size: 0.8em; color: #888; float: right;">${match.kcal} ккал</span>`;
+            
+            item.addEventListener('click', function() {
+                input.value = match.name;
+                updateProductData(id, 'name', match.name);
+                closeAutocomplete(id);
+            });
+            list.appendChild(item);
+        });
+    }
+
+    function closeAutocomplete(id) {
+        const list = document.getElementById(`autocomplete-${id}`);
+        if (list) list.innerHTML = '';
+    }
+
+    // --- Cooked Weight ---
+
+    cookedWeightInput.addEventListener('input', (e) => {
+        state.cookedWeight = e.target.value ? parseFloat(e.target.value) : null;
+        updateCalculation();
+    });
+
+    // --- URL State Management ---
+    
+    // Debounce save
+    let saveTimeout;
+    function saveStateToURL() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            // Filter out purely empty rows to keep URL shorter
+            const productsToSave = state.products
+                .filter(p => p.name.trim() !== '')
+                .map(p => ({ n: p.name, w: p.weight }));
+
+            const data = {
+                p: productsToSave,
+                cw: state.cookedWeight
+            };
+
+            try {
+                const json = JSON.stringify(data);
+                // Robust UTF-8 to Base64
+                const base64 = btoa(unescape(encodeURIComponent(json)));
+                
+                const url = new URL(window.location);
+                url.searchParams.set('data', base64);
+                window.history.replaceState({}, '', url.toString());
+            } catch (e) {
+                console.error("Error saving state:", e);
+            }
+        }, 500);
+    }
+
+    function loadStateFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const dataStr = params.get('data');
+        if (!dataStr) return;
+
+        try {
+            // Robust Base64 to UTF-8
+            const json = decodeURIComponent(escape(atob(dataStr)));
+            const data = JSON.parse(json);
+            
+            if (data.p && Array.isArray(data.p)) {
+                state.products = data.p.map(item => ({
+                    id: generateId(),
+                    name: item.n,
+                    weight: item.w
+                }));
+            }
+            if (data.cw) {
+                state.cookedWeight = data.cw;
+                cookedWeightInput.value = data.cw;
+            }
+        } catch (e) {
+            console.error("Failed to parse state from URL:", e);
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // --- Init ---
+    addBtn.addEventListener('click', () => addProductRow());
+    
+    // Help Toggle
+    document.getElementById('help-toggle').addEventListener('click', () => {
+        const section = document.getElementById('help-section');
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Error Reporting
+    document.getElementById('error-toggle').addEventListener('click', () => {
+        window.open('https://forms.gle/6YpwyicbQJaTG4yEA', '_blank');
+    });
+
+    // Idea Reporting
+    document.getElementById('idea-toggle').addEventListener('click', () => {
+        window.open('https://forms.gle/txLoacGpFc5qVosp8', '_blank');
+    });
+
+    init();
+</script>
+
+</body>
+</html>
