@@ -27,7 +27,7 @@ SOFTWARE.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Счетчик калорий (Рецепт)</title>
+    <title>Калькулятор калорий</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
     <style>
         :root {
@@ -137,6 +137,35 @@ SOFTWARE.
             color: var(--danger-color);
         }
 
+        .buttons-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .btn-share {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-share:hover {
+            background-color: #f0f7ff;
+        }
+        
+        .btn-share:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
         .controls {
             margin-top: 20px;
             border-top: 2px solid var(--border-color);
@@ -149,18 +178,41 @@ SOFTWARE.
         .btn-add {
             background-color: var(--primary-color);
             color: white;
-            border: none;
+            border: 1px solid transparent;
             padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
+            line-height: 1.5;
             align-self: flex-start;
             transition: opacity 0.2s;
         }
 
         .btn-add:hover {
             opacity: 0.9;
+        }
+
+        .btn-share {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid transparent;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1.2;
+            transition: all 0.2s;
+        }
+
+        .btn-share:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .btn-share:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(100%);
         }
 
         .summary-section {
@@ -172,14 +224,14 @@ SOFTWARE.
         
         .summary-card {
             background: #f8f9fa;
-            padding: 16px;
+            padding: 8px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
 
         .summary-title {
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: #555;
             display: block;
         }
@@ -187,26 +239,21 @@ SOFTWARE.
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            min-height: 38px; /* Force rows to match height of input row */
         }
         
         .summary-value {
             font-weight: 600;
         }
 
-        .cooked-weight-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        
         .cooked-weight-input {
-            width: 100px;
+            width: 90px;
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-weight: bold;
+            text-align: right;
         }
 
         /* Autocomplete */
@@ -316,7 +363,10 @@ SOFTWARE.
     </div>
 
     <div class="controls">
-        <button class="btn-add" id="add-btn">+ Добавить продукт</button>
+        <div class="buttons-row">
+            <button class="btn-add" id="add-btn">+ Добавить продукт</button>
+            <button class="btn-share" id="share-btn" title="Копировать короткую ссылку">📄</button>
+        </div>
 
         <div class="summary-section">
             <!-- Total Ingredients -->
@@ -344,8 +394,8 @@ SOFTWARE.
             <div class="summary-card" style="background-color: #e3f2fd; border-color: #90caf9;">
                 <span class="summary-title">Готовое блюдо (на 100г)</span>
                 
-                <div class="cooked-weight-container">
-                    <label for="cooked-weight">Вес готового блюда (г):</label>
+                <div class="summary-row">
+                    <label for="cooked-weight" style="cursor: pointer; font-weight: 500;">Вес готового блюда (г):</label>
                     <input type="number" id="cooked-weight" class="cooked-weight-input" placeholder="Не указан">
                 </div>
 
@@ -1657,6 +1707,75 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     // Idea Reporting
     document.getElementById('idea-toggle').addEventListener('click', () => {
         window.open('https://forms.gle/txLoacGpFc5qVosp8', '_blank');
+    });
+
+    // --- Sharing Logic ---
+    function getShortUrl(longUrl) {
+        return new Promise((resolve, reject) => {
+            const callbackName = 'isgdCallback_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            
+            // Create script
+            const script = document.createElement('script');
+            const apiUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
+            
+            // Define callback
+            window[callbackName] = function(data) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                
+                if (data.shorturl) {
+                    resolve(data.shorturl);
+                } else {
+                    reject(data.errormessage || 'Unknown error');
+                }
+            };
+            
+            // Handle script load error
+            script.onerror = function() {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                reject('Network error');
+            };
+
+            script.src = apiUrl;
+            document.body.appendChild(script);
+        });
+    }
+
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn.addEventListener('click', async () => {
+        // Construct the URL explicitly to ensure it matches current state immediately
+        const productsToSave = state.products
+            .filter(p => p.name.trim() !== '')
+            .map(p => ({ n: p.name, w: p.weight }));
+        
+        const data = { p: productsToSave, cw: state.cookedWeight };
+        const json = JSON.stringify(data);
+        const compressed = LZString.compressToEncodedURIComponent(json);
+        const currentUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?d=' + compressed;
+
+        const originalText = '📄';
+        shareBtn.textContent = '⏳';
+        shareBtn.disabled = true;
+
+        try {
+            const shortUrl = await getShortUrl(currentUrl);
+            await navigator.clipboard.writeText(shortUrl);
+            shareBtn.textContent = '✅';
+        } catch (err) {
+            console.error(err);
+            alert('Ошибка при создании ссылки: ' + err);
+            shareBtn.textContent = originalText;
+        } finally {
+            if (shareBtn.textContent === '✅') {
+                setTimeout(() => {
+                    shareBtn.textContent = originalText;
+                    shareBtn.disabled = false;
+                }, 2500);
+            } else {
+                shareBtn.disabled = false;
+            }
+        }
     });
 
     init();
