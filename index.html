@@ -319,12 +319,59 @@ SOFTWARE.
             padding-left: 20px;
             margin: 10px 0;
         }
+
+        /* Editable Title */
+        .header-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        
+        .header-wrapper h1 {
+            margin: 0;
+            transition: border-bottom 0.2s;
+        }
+
+        .header-wrapper input {
+            font-size: 2em;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            padding: 5px;
+            width: 100%;
+            max-width: 600px;
+            font-family: inherit;
+            color: var(--text-color);
+            margin-bottom: 24px; /* match h1 margin */
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+            padding: 5px;
+            color: var(--text-color);
+        }
+
+        .btn-icon:hover {
+            opacity: 1;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Калькулятор калорийности</h1>
+    <div class="header-wrapper">
+        <h1 id="recipe-title">Калькулятор калорийности</h1>
+        <button id="edit-title-btn" class="btn-icon" title="Изменить название">✏️</button>
+    </div>
 
     <div class="grid-container header-row">
         <span>Продукт</span>
@@ -1285,6 +1332,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     };
 
     // --- DOM Elements ---
+    const editTitleBtn = document.getElementById('edit-title-btn');
     const listContainer = document.getElementById('products-list');
     const addBtn = document.getElementById('add-btn');
     const cookedWeightInput = document.getElementById('cooked-weight');
@@ -1307,6 +1355,48 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     function generateId() {
         return Math.random().toString(36).substr(2, 9);
     }
+
+    function toggleTitleEdit() {
+        const currentTitleEl = document.getElementById('recipe-title');
+        const isEditing = currentTitleEl.tagName === 'INPUT';
+        
+        if (!isEditing) {
+            // Switch to input
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = state.title;
+            input.id = 'recipe-title';
+            currentTitleEl.replaceWith(input);
+            input.focus();
+            input.select();
+            
+            let finished = false;
+            const finishEdit = () => {
+                if (finished) return;
+                finished = true;
+                
+                const newTitle = input.value.trim() || 'Калькулятор калорийности';
+                state.title = newTitle;
+                const h1 = document.createElement('h1');
+                h1.id = 'recipe-title';
+                h1.textContent = newTitle;
+                input.replaceWith(h1);
+                updateCalculation(); // Trigger URL save
+            };
+
+            input.addEventListener('blur', finishEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') finishEdit();
+                if (e.key === 'Escape') {
+                    input.value = state.title;
+                    finishEdit();
+                }
+            });
+        }
+    }
+
+    // Initial listener
+    editTitleBtn.addEventListener('click', toggleTitleEdit);
 
     function init() {
         loadStateFromURL();
@@ -1614,6 +1704,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 .map(p => ({ n: p.name, w: p.weight }));
 
             const data = {
+                t: state.title,
                 p: productsToSave,
                 cw: state.cookedWeight
             };
@@ -1642,6 +1733,11 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
             const data = JSON.parse(json);
             
+            if (data.t) {
+                state.title = data.t;
+                const titleEl = document.getElementById('recipe-title');
+                if (titleEl) titleEl.textContent = data.t;
+            }
             if (data.p && Array.isArray(data.p)) {
                 state.products = data.p.map(item => ({
                     id: generateId(),
@@ -1727,7 +1823,11 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             .filter(p => p.name.trim() !== '')
             .map(p => ({ n: p.name, w: p.weight }));
         
-        const data = { p: productsToSave, cw: state.cookedWeight };
+        const data = { 
+            t: state.title,
+            p: productsToSave, 
+            cw: state.cookedWeight 
+        };
         const json = JSON.stringify(data);
         const compressed = LZString.compressToEncodedURIComponent(json);
         const currentUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?d=' + compressed;
