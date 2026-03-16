@@ -325,27 +325,41 @@ SOFTWARE.
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             margin-bottom: 24px;
         }
         
-        .header-wrapper h1 {
-            margin: 0;
-            transition: border-bottom 0.2s;
-        }
-
+        .header-wrapper h1,
         .header-wrapper input {
             font-size: 2em;
             font-weight: 600;
-            text-align: center;
-            border: 1px solid var(--primary-color);
-            border-radius: 6px;
+            line-height: 1.2;
+            color: var(--text-color);
+            font-family: inherit;
+            margin: 0;
             padding: 5px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .header-wrapper h1 {
+            width: auto;
+            max-width: 100%;
+            /* Invisible border to match input height exactly */
+            border: 1px solid transparent; 
+        }
+
+        .header-wrapper input {
             width: 100%;
             max-width: 600px;
-            font-family: inherit;
-            color: var(--text-color);
-            margin-bottom: 24px; /* match h1 margin */
+            border: 1px solid var(--primary-color);
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        
+        .header-wrapper input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
 
         .btn-icon {
