@@ -1719,10 +1719,14 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 .map(p => ({ n: p.name, w: p.weight }));
 
             const data = {
-                t: state.title,
                 p: productsToSave,
                 cw: state.cookedWeight
             };
+
+            // Only save title if it differs from default
+            if (state.title && state.title !== 'Калькулятор калорийности') {
+                data.t = state.title;
+            }
 
             try {
                 const json = JSON.stringify(data);
