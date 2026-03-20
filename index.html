@@ -1719,9 +1719,13 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 .map(p => ({ n: p.name, w: p.weight }));
 
             const data = {
-                p: productsToSave,
-                cw: state.cookedWeight
+                p: productsToSave
             };
+
+            // Only save cooked weight if it exists and is valid
+            if (state.cookedWeight && state.cookedWeight > 0) {
+                data.cw = state.cookedWeight;
+            }
 
             // Only save title if it differs from default
             if (state.title && state.title !== 'Калькулятор калорийности') {
