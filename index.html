@@ -1380,9 +1380,35 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         { name: "Маргарин (столовый 82%)", protein: 0.3, fat: 82.0, carbs: 1.0, kcal: 743 },
         { name: "Маргарин для выпечки (60%)", protein: 0.1, fat: 60.0, carbs: 0.5, kcal: 540 },
 
-        // ПОПУЛЯРНЫЕ СПЕЦИИ И ПОСЫПКИ (где есть макронутриенты)
+        // СПЕЦИИ 
+        { name: "Соль поваренная / морская", protein: 0, fat: 0, carbs: 0, kcal: 0 }, // 0 ккал, но задерживает воду
+        { name: "Перец черный (молотый / горошек)", protein: 10.4, fat: 3.3, carbs: 38.6, kcal: 251 },
+        { name: "Перец красный острый (Чили молотый)", protein: 12.0, fat: 17.3, carbs: 31.6, kcal: 318 },
+        { name: "Паприка сладкая (молотая)", protein: 14.1, fat: 12.9, carbs: 54.0, kcal: 282 },
+        { name: "Паприка копченая", protein: 14.5, fat: 13.0, carbs: 55.0, kcal: 289 },
+        { name: "Куркума (молотая)", protein: 7.8, fat: 9.9, carbs: 44.4, kcal: 312 }, // Суперфуд
+        { name: "Чеснок сушеный (гранулированный/порошок)", protein: 16.6, fat: 0.7, carbs: 72.7, kcal: 331 },
+        { name: "Кориандр (молотый)", protein: 12.4, fat: 17.8, carbs: 13.1, kcal: 298 },
+        { name: "Травы Итальянские / Прованские (сухие)", protein: 10.0, fat: 4.0, carbs: 25.0, kcal: 250 },
+        { name: "Хмели-сунели", protein: 5.0, fat: 8.0, carbs: 20.0, kcal: 180 },
+        { name: "Лавровый лист (сухой)", protein: 7.6, fat: 8.4, carbs: 48.7, kcal: 313 },
         { name: "Корица (молотая)", protein: 4.0, fat: 1.2, carbs: 27.5, kcal: 247 },
         { name: "Лимонная кислота (сухая)", protein: 0, fat: 0, carbs: 0, kcal: 0 },
+
+        // БУЛЬОНЫ 
+        { name: "Бульон куриный (домашний, из грудки и костей)", protein: 2.0, fat: 0.5, carbs: 0.3, kcal: 15 },
+        { name: "Бульон говяжий (на кости)", protein: 2.5, fat: 1.0, carbs: 0, kcal: 20 },
+        { name: "Бульон свиной", protein: 2.0, fat: 3.0, carbs: 0, kcal: 35 },
+        { name: "Бульон овощной", protein: 0.5, fat: 0.1, carbs: 1.0, kcal: 6 },
+        { name: "Бульон рыбный", protein: 2.0, fat: 0.3, carbs: 0, kcal: 12 },
+        { name: "Бульонный кубик (куриный / мясной сухой)", protein: 9.0, fat: 8.0, carbs: 30.0, kcal: 230 },
+
+        // ВКУСОВЫЕ ДОБАВКИ К БЛЮДАМ И САЛАТАМ
+        { name: "Аджика домашняя (острая, из томатов и перца)", protein: 1.5, fat: 0.5, carbs: 9.0, kcal: 45 },
+        { name: "Хрен столовый", protein: 2.5, fat: 0.5, carbs: 11.5, kcal: 60 },
+        { name: "Каперсы (консервированные)", protein: 2.4, fat: 0.9, carbs: 4.9, kcal: 23 },
+        { name: "Вяленые томаты (в масле, с учетом масла)", protein: 5.0, fat: 15.0, carbs: 23.0, kcal: 250 },
+
     ];
 
     // --- State ---
