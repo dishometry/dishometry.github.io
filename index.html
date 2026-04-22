@@ -137,15 +137,6 @@ SOFTWARE.
             color: var(--danger-color);
         }
 
-        .buttons-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-
-
         .controls {
             margin-top: 20px;
             border-top: 2px solid var(--border-color);
@@ -153,6 +144,20 @@ SOFTWARE.
             display: flex;
             flex-direction: column;
             gap: 16px;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .share-group {
+            display: flex;
+            gap: 10px;
         }
 
         .btn-add {
@@ -173,24 +178,42 @@ SOFTWARE.
             opacity: 0.9;
         }
 
-        .btn-share {
-            background-color: transparent;
-            color: var(--primary-color);
-            border: 1px solid transparent;
+        .btn-secondary, .btn-outline {
             padding: 10px 15px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 18px;
-            line-height: 1.2;
+            font-size: 14px;
+            font-weight: 500;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .btn-share:hover {
-            background-color: #e3f2fd;
+        .btn-secondary {
+            background-color: #f1f3f5;
+            color: #444;
+            border: 1px solid #e9ecef;
         }
-        
-        .btn-share:disabled {
-            cursor: wait;
+
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #ced4da;
+            color: #666;
+        }
+
+        .btn-outline:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+        }
+
+        .btn-secondary:disabled, .btn-outline:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .summary-section {
@@ -277,6 +300,21 @@ SOFTWARE.
             .header-row span:nth-child(n+4), 
             .product-row input:nth-child(n+4) {
                 display: none; /* Hide detailed macros on very small screens or make scrollable */
+            }
+
+            .controls-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .share-group {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .share-group button {
+                flex: 1;
+                justify-content: center;
             }
         }
 
@@ -402,9 +440,12 @@ SOFTWARE.
     </div>
 
     <div class="controls">
-        <div class="buttons-row">
+        <div class="controls-container">
             <button class="btn-add" id="add-btn">+ Добавить продукт</button>
-            <button class="btn-share" id="share-btn" title="Копировать короткую ссылку">📄</button>
+            <div class="share-group">
+                <button id="btn-copy-short" class="btn-secondary">🔗 Короткая ссылка</button>
+                <button id="btn-copy-long" class="btn-outline" title="Скопировать весь URL целиком">📄 Полная ссылка</button>
+            </div>
         </div>
 
         <div class="summary-section">
@@ -1911,43 +1952,43 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         });
     }
 
-    const shareBtn = document.getElementById('share-btn');
-    shareBtn.addEventListener('click', async () => {
-        // Construct the URL explicitly to ensure it matches current state immediately
-        const productsToSave = state.products
-            .filter(p => p.name.trim() !== '')
-            .map(p => ({ n: p.name, w: p.weight }));
-        
-        const data = { 
-            t: state.title,
-            p: productsToSave, 
-            cw: state.cookedWeight 
-        };
-        const json = JSON.stringify(data);
-        const compressed = LZString.compressToEncodedURIComponent(json);
-        const currentUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?d=' + compressed;
+    const btnCopyShort = document.getElementById('btn-copy-short');
+    const btnCopyLong = document.getElementById('btn-copy-long');
 
-        const originalText = '📄';
-        shareBtn.textContent = '⏳';
-        shareBtn.disabled = true;
+    btnCopyShort.addEventListener('click', async () => {
+        const originalText = '🔗 Короткая ссылка';
+        btnCopyShort.textContent = '⏳ Генерация...';
+        btnCopyShort.disabled = true;
 
         try {
-            const shortUrl = await getShortUrl(currentUrl);
+            // URL is already updated in address bar by debounce save, but we reconstruct to be safe
+            const shortUrl = await getShortUrl(window.location.href);
             await navigator.clipboard.writeText(shortUrl);
-            shareBtn.textContent = '✅';
+            btnCopyShort.textContent = '✅ Скопировано!';
         } catch (err) {
             console.error(err);
             alert('Ошибка при создании ссылки: ' + err);
-            shareBtn.textContent = originalText;
+            btnCopyShort.textContent = originalText;
         } finally {
-            if (shareBtn.textContent === '✅') {
-                setTimeout(() => {
-                    shareBtn.textContent = originalText;
-                    shareBtn.disabled = false;
-                }, 2500);
-            } else {
-                shareBtn.disabled = false;
-            }
+            setTimeout(() => {
+                btnCopyShort.textContent = originalText;
+                btnCopyShort.disabled = false;
+            }, 2500);
+        }
+    });
+
+    btnCopyLong.addEventListener('click', async () => {
+        const originalText = '📄 Полная ссылка';
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            btnCopyLong.textContent = '✅ Скопировано!';
+        } catch (err) {
+            console.error(err);
+            alert('Не удалось скопировать: ' + err);
+        } finally {
+            setTimeout(() => {
+                btnCopyLong.textContent = originalText;
+            }, 2500);
         }
     });
 
