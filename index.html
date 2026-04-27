@@ -416,6 +416,20 @@ SOFTWARE.
             color: var(--primary-color);
         }
     </style>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108239128', 'ym');
+
+    ym(108239128, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/108239128" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 </head>
 <body>
 
@@ -498,8 +512,8 @@ SOFTWARE.
     <footer>
         <div class="footer-links">
             <button class="footer-link" id="help-toggle">❓ Как использовать?</button>
-            <button class="footer-link" id="error-toggle">🐞 Нашли ошибку?</button>
-            <button class="footer-link" id="idea-toggle">💡 Есть идея?</button>
+            <button class="footer-link" id="idea-toggle">💡 Отзывы и предложения</button>
+            <button class="footer-link" id="community-btn">📢 Сообщество Dishometry</button>
         </div>
 
         <div id="help-section" class="help-content" style="display: none;">
@@ -1910,12 +1924,12 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Error Reporting
-    document.getElementById('error-toggle').addEventListener('click', () => {
-        window.open('https://forms.gle/6YpwyicbQJaTG4yEA', '_blank');
+    // Community Link
+    document.getElementById('community-btn').addEventListener('click', () => {
+        window.open('https://t.me/+qy6KnxACAXA0ZjFi', '_blank');
     });
 
-    // Idea Reporting
+    // Feedback Reporting
     document.getElementById('idea-toggle').addEventListener('click', () => {
         window.open('https://forms.gle/txLoacGpFc5qVosp8', '_blank');
     });
