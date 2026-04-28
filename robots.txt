@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /*?d=*
+Sitemap: https://dishometry.ru/sitemap.xml
