@@ -27,7 +27,7 @@ SOFTWARE.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор калорий</title>
+    <title>Калькулятор калорийности</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
 
     <meta name="description" content="Бесплатный счетчик калорий без регистрации. Расчет КБЖУ сложных блюд с учетом ужарки и уварки при готовке. Сохраняй рецепты и делись короткими ссылками!">
@@ -1504,6 +1504,14 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
     // --- Logic ---
 
+    function updateDocumentTitle(recipeName) {
+        if (recipeName === 'Калькулятор калорийности') {
+            document.title = 'Калькулятор калорийности';
+        } else {
+            document.title = recipeName + ' — Калькулятор калорийности';
+        }
+    }
+
     function generateId() {
         return Math.random().toString(36).substr(2, 9);
     }
@@ -1529,6 +1537,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 
                 const newTitle = input.value.trim() || 'Калькулятор калорийности';
                 state.title = newTitle;
+                updateDocumentTitle(newTitle);
                 const h1 = document.createElement('h1');
                 h1.id = 'recipe-title';
                 h1.textContent = newTitle;
@@ -1895,6 +1904,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             
             if (data.t) {
                 state.title = data.t;
+                updateDocumentTitle(data.t);
                 const titleEl = document.getElementById('recipe-title');
                 if (titleEl) titleEl.textContent = data.t;
             }
