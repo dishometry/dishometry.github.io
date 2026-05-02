@@ -424,10 +424,71 @@ SOFTWARE.
             opacity: 1;
             color: var(--primary-color);
         }
+
+        /* Cookie Banner */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            padding: 16px 24px;
+            z-index: 1000;
+            display: none; /* Managed via JS */
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .cookie-text {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #555;
+            max-width: 800px;
+        }
+
+        .cookie-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .cookie-text a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-cookie {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .btn-cookie:hover {
+            opacity: 0.9;
+        }
     </style>
 
     <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]function(){(m[i].a=m[i].a[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108239128', 'ym');
 
+        ym(108239128, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/108239128" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
 </head>
 <body>
@@ -511,8 +572,8 @@ SOFTWARE.
     <footer>
         <div class="footer-links">
             <button class="footer-link" id="help-toggle">❓ Как использовать?</button>
-            <button class="footer-link" id="idea-toggle">💡 Отзывы и предложения</button>
-            <button class="footer-link" id="community-btn">📢 Сообщество Dishometry</button>
+            <a href="privacy.html" target="_blank" class="footer-link">🛡️ Политика конфиденциальности</a>
+            <a href="https://t.me/+qy6KnxACAXA0ZjFi" target="_blank" class="footer-link">📢 Сообщество Dishometry</a>
         </div>
 
         <div id="help-section" class="help-content" style="display: none;">
@@ -527,6 +588,13 @@ SOFTWARE.
             </ul>
         </div>
     </footer>
+</div>
+
+<div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-text">
+        Мы используем файлы cookie и сервис Яндекс.Метрика для сбора аналитики и улучшения работы сайта. Продолжая использовать сайт, вы соглашаетесь с нашей <a href="privacy.html" target="_blank">Политикой конфиденциальности</a>.
+    </div>
+    <button id="cookie-accept" class="btn-cookie">Понятно</button>
 </div>
 
 <!-- 1. Встроенная библиотека LZ-String 1.5.0 -->
@@ -1557,6 +1625,12 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             renderRows();
         }
         updateCalculation();
+
+        // Cookie Consent
+        const cookieBanner = document.getElementById('cookie-banner');
+        if (!localStorage.getItem('cookieAccepted')) {
+            cookieBanner.style.display = 'flex';
+        }
     }
 
     function addProductRow(data = { name: '', weight: 100 }) {
@@ -1933,14 +2007,11 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Community Link
-    document.getElementById('community-btn').addEventListener('click', () => {
-
-    });
-
-    // Feedback Reporting
-    document.getElementById('idea-toggle').addEventListener('click', () => {
-
+    // Cookie Accept
+    document.getElementById('cookie-accept').addEventListener('click', () => {
+        const cookieBanner = document.getElementById('cookie-banner');
+        cookieBanner.style.display = 'none';
+        localStorage.setItem('cookieAccepted', 'true');
     });
 
     // --- Sharing Logic ---
