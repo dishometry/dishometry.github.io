@@ -424,62 +424,7 @@ SOFTWARE.
             opacity: 1;
             color: var(--primary-color);
         }
-
-        /* Cookie Banner */
-        .cookie-banner {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-            padding: 16px 24px;
-            z-index: 1000;
-            display: none; /* Managed via JS */
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .cookie-text {
-            font-size: 14px;
-            line-height: 1.4;
-            color: #555;
-            max-width: 800px;
-        }
-
-        .cookie-text a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .cookie-text a:hover {
-            text-decoration: underline;
-        }
-
-        .btn-cookie {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .btn-cookie:hover {
-            opacity: 0.9;
-        }
     </style>
-
-    <!-- Yandex.Metrika counter -->
-    <!-- временно убрал метрику -->
-    <!-- /Yandex.Metrika counter -->
 </head>
 <body>
 
@@ -578,13 +523,6 @@ SOFTWARE.
             </ul>
         </div>
     </footer>
-</div>
-
-<div id="cookie-banner" class="cookie-banner">
-    <div class="cookie-text">
-        Мы используем файлы cookie и сервис Яндекс.Метрика для сбора аналитики и улучшения работы сайта. Продолжая использовать сайт, вы соглашаетесь с нашей <a href="privacy.html" target="_blank">Политикой конфиденциальности</a>.
-    </div>
-    <button id="cookie-accept" class="btn-cookie">Понятно</button>
 </div>
 
 <!-- 1. Встроенная библиотека LZ-String 1.5.0 -->
@@ -1615,12 +1553,6 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             renderRows();
         }
         updateCalculation();
-
-        // Cookie Consent
-        const cookieBanner = document.getElementById('cookie-banner');
-        if (!localStorage.getItem('cookieAccepted')) {
-            cookieBanner.style.display = 'flex';
-        }
     }
 
     function addProductRow(data = { name: '', weight: 100 }) {
@@ -1995,13 +1927,6 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     document.getElementById('help-toggle').addEventListener('click', () => {
         const section = document.getElementById('help-section');
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
-    });
-
-    // Cookie Accept
-    document.getElementById('cookie-accept').addEventListener('click', () => {
-        const cookieBanner = document.getElementById('cookie-banner');
-        cookieBanner.style.display = 'none';
-        localStorage.setItem('cookieAccepted', 'true');
     });
 
     // --- Sharing Logic ---
