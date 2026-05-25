@@ -409,6 +409,22 @@ SOFTWARE.
             box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
 
+        #recipe-desc {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            resize: none;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 14px;
+            field-sizing: content;
+            min-height: 3em;
+        }
+
         .btn-icon {
             background: none;
             border: none;
@@ -432,7 +448,10 @@ SOFTWARE.
     <div class="header-wrapper">
         <h1 id="recipe-title">Калькулятор калорийности</h1>
         <button id="edit-title-btn" class="btn-icon" title="Изменить название">✏️</button>
+        <button id="add-desc-btn" class="btn-icon" title="Добавить заметку">📝</button>
     </div>
+
+    <textarea id="recipe-desc" maxlength="500" placeholder="Краткое описание или шаги приготовления (до 500 символов)..." rows="3"></textarea>
 
     <div class="grid-container header-row">
         <span>Продукт</span>
@@ -515,6 +534,7 @@ SOFTWARE.
             <strong>Основные возможности:</strong>
             <ul>
                 <li><strong>Название рецепта:</strong> Нажмите на иконку ✏️ рядом с заголовком, чтобы дать рецепту название.</li>
+                <li><strong>Заметки:</strong> Нажмите на иконку 📝, чтобы добавить описание рецепта или шаги приготовления.</li>
                 <li><strong>Автоподбор:</strong> Начните вводить название, чтобы выбрать продукт из базы.</li>
                 <li><strong>Свои продукты:</strong> Можно ввести <code>Название (Ккал/Б/Ж/У)</code>, например: <i>Сыр (300/25/22/1)</i>.</li>
                 <li><strong>Масштабирование:</strong> Введите <code>Название (Ккал)</code>, чтобы пересчитать БЖУ продукта из базы под нужную калорийность.</li>
@@ -1466,11 +1486,14 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     let state = {
         title: 'Калькулятор калорийности',
         products: [], // { id, name, weight }
-        cookedWeight: null
+        cookedWeight: null,
+        description: ''
     };
 
     // --- DOM Elements ---
     const editTitleBtn = document.getElementById('edit-title-btn');
+    const addDescBtn = document.getElementById('add-desc-btn');
+    const recipeDesc = document.getElementById('recipe-desc');
     const listContainer = document.getElementById('products-list');
     const addBtn = document.getElementById('add-btn');
     const cookedWeightInput = document.getElementById('cooked-weight');
@@ -1864,6 +1887,10 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 data.t = state.title;
             }
 
+            if (state.description) {
+                data.d = state.description;
+            }
+
             try {
                 const json = JSON.stringify(data);
                 const compressed = LZString.compressToEncodedURIComponent(json);
@@ -1905,6 +1932,12 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 state.cookedWeight = data.cw;
                 cookedWeightInput.value = data.cw;
             }
+            if (data.d) {
+                state.description = data.d;
+                recipeDesc.value = data.d;
+                recipeDesc.style.display = 'block';
+                addDescBtn.style.display = 'none';
+            }
         } catch (e) {
             console.error("Failed to parse state from URL:", e);
         }
@@ -1927,6 +1960,25 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     document.getElementById('help-toggle').addEventListener('click', () => {
         const section = document.getElementById('help-section');
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Description logic
+    addDescBtn.addEventListener('click', () => {
+        addDescBtn.style.display = 'none';
+        recipeDesc.style.display = 'block';
+        recipeDesc.focus();
+    });
+
+    recipeDesc.addEventListener('input', (e) => {
+        state.description = e.target.value;
+        saveStateToURL();
+    });
+
+    recipeDesc.addEventListener('blur', () => {
+        if (!recipeDesc.value.trim()) {
+            recipeDesc.style.display = 'none';
+            addDescBtn.style.display = 'inline-block';
+        }
     });
 
     // --- Sharing Logic ---
