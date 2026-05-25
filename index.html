@@ -451,7 +451,7 @@ SOFTWARE.
         <button id="add-desc-btn" class="btn-icon" title="Добавить заметку">📝</button>
     </div>
 
-    <textarea id="recipe-desc" maxlength="500" placeholder="Краткое описание или шаги приготовления (до 500 символов)..." rows="3"></textarea>
+    <textarea id="recipe-desc" maxlength="1000" placeholder="Краткое описание или шаги приготовления (до 1000 символов)..." rows="3"></textarea>
 
     <div class="grid-container header-row">
         <span>Продукт</span>
@@ -504,7 +504,7 @@ SOFTWARE.
                 
                 <div class="summary-row">
                     <label for="cooked-weight" style="cursor: pointer; font-weight: 500;">Вес готового блюда (г):</label>
-                    <input type="number" id="cooked-weight" class="cooked-weight-input" placeholder="Не указан">
+                    <input type="number" id="cooked-weight" class="cooked-weight-input" placeholder="Не указан" min="0" max="10000000">
                 </div>
 
                 <div class="summary-row">
@@ -1533,6 +1533,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             // Switch to input
             const input = document.createElement('input');
             input.type = 'text';
+            input.maxLength = 200;
             input.value = state.title;
             input.id = 'recipe-title';
             currentTitleEl.replaceWith(input);
@@ -1782,10 +1783,10 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         
         div.innerHTML = `
             <div style="position: relative;">
-                <input type="text" class="input-name" placeholder="Название продукта" value="${escapeHtml(product.name)}" data-id="${product.id}">
+                <input type="text" class="input-name" placeholder="Название продукта" maxlength="100" value="${escapeHtml(product.name)}" data-id="${product.id}">
                 <div class="autocomplete-items" id="autocomplete-${product.id}"></div>
             </div>
-            <input type="number" class="input-weight" placeholder="0" value="${product.weight}" data-id="${product.id}">
+            <input type="number" class="input-weight" placeholder="0" min="0" max="1000000" value="${product.weight}" data-id="${product.id}">
             <input type="text" class="col-kcal" readonly value="0">
             <input type="text" class="col-p" readonly value="0">
             <input type="text" class="col-f" readonly value="0">
