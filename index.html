@@ -1864,37 +1864,30 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         }
     });
 
-    // --- Sharing Logic ---
-    function getShortUrl(longUrl) {
-        return new Promise((resolve, reject) => {
-            const callbackName = 'isgdCallback_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            
-            // Create script
-            const script = document.createElement('script');
-            const apiUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
-            
-            // Define callback
-            window[callbackName] = function(data) {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                
-                if (data.shorturl) {
-                    resolve(data.shorturl);
-                } else {
-                    reject(data.errormessage || 'Unknown error');
-                }
-            };
-            
-            // Handle script load error
-            script.onerror = function() {
-                delete window[callbackName];
-                document.body.removeChild(script);
-                reject('Network error');
-            };
+    // --- Sharing Logic (Через Yandex Cloud Function) ---
+    async function getShortUrl(longUrl) {
+        const proxyApiUrl = 'https://functions.yandexcloud.net/d4eesp9i1b653gb98tmr';
+        const requestUrl = `${proxyApiUrl}?url=${encodeURIComponent(longUrl)}`;
 
-            script.src = apiUrl;
-            document.body.appendChild(script);
-        });
+        try {
+            const response = await fetch(requestUrl);
+
+            if (!response.ok) {
+                throw new Error(`Ошибка сервера: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            return data.shorturl;
+
+        } catch (error) {
+            console.error('Ошибка при сокращении ссылки:', error);
+            throw error;
+        }
     }
 
     const btnCopyShort = document.getElementById('btn-copy-short');
