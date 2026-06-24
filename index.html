@@ -303,12 +303,17 @@ SOFTWARE.
         /* Mobile adaptation */
         @media (max-width: 768px) {
             .grid-container {
-                grid-template-columns: 1fr 70px 40px; /* Simplified for mobile */
-                gap: 8px;
+                grid-template-columns: 1fr 65px 60px 30px; 
+                gap: 6px;
             }
-            .header-row span:nth-child(n+4), 
+            
+            .header-row span:nth-child(n+4):not(:last-child), 
             .product-row input:nth-child(n+4) {
-                display: none; /* Hide detailed macros on very small screens or make scrollable */
+                display: none; 
+            }
+
+            .product-row input {
+                padding: 10px 4px;
             }
 
             .controls-container {
@@ -324,6 +329,8 @@ SOFTWARE.
             .share-group button {
                 flex: 1;
                 justify-content: center;
+                padding: 10px 5px;
+                font-size: 13px;
             }
         }
 
