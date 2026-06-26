@@ -1882,29 +1882,31 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         }
     });
 
-    // --- Sharing Logic (Через Yandex Cloud Function) ---
+    // --- Sharing Logic (Через API clck.ru НАПРЯМУЮ) ---
     async function getShortUrl(longUrl) {
-        const proxyApiUrl = 'https://functions.yandexcloud.net/d4eesp9i1b653gb98tmr';
-        const requestUrl = `${proxyApiUrl}?url=${encodeURIComponent(longUrl)}`;
+        const apiUrl = `https://clck.ru/--?url=${encodeURIComponent(longUrl)}`;
 
         try {
-            const response = await fetch(requestUrl);
-
+            const response = await fetch(apiUrl);
+            
             if (!response.ok) {
-                throw new Error(`Ошибка сервера: ${response.status}`);
+                // Если clck.ru вернул ошибку (например, 400 или 500)
+                throw new Error(`Ошибка сервера clck.ru: ${response.status}`);
             }
 
-            const data = await response.json();
+            // ВАЖНО: clck.ru возвращает голый текст, а не JSON, поэтому используем .text()
+            const shortUrl = await response.text();
 
-            if (data.error) {
-                throw new Error(data.error);
+            // Проверяем, что ответ похож на ссылку, а не на сообщение об ошибке
+            if (!shortUrl.startsWith('http')) {
+                throw new Error('Некорректный ответ от сервиса: ' + shortUrl);
             }
 
-            return data.shorturl;
+            return shortUrl;
 
         } catch (error) {
             console.error('Ошибка при сокращении ссылки:', error);
-            throw error;
+            throw error; // Перекидываем ошибку дальше, чтобы кнопка показала Alert
         }
     }
 
