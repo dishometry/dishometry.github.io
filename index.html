@@ -1890,14 +1890,11 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             const response = await fetch(apiUrl);
             
             if (!response.ok) {
-                // Если clck.ru вернул ошибку (например, 400 или 500)
                 throw new Error(`Ошибка сервера clck.ru: ${response.status}`);
             }
 
-            // ВАЖНО: clck.ru возвращает голый текст, а не JSON, поэтому используем .text()
             const shortUrl = await response.text();
 
-            // Проверяем, что ответ похож на ссылку, а не на сообщение об ошибке
             if (!shortUrl.startsWith('http')) {
                 throw new Error('Некорректный ответ от сервиса: ' + shortUrl);
             }
@@ -1906,7 +1903,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
         } catch (error) {
             console.error('Ошибка при сокращении ссылки:', error);
-            throw error; // Перекидываем ошибку дальше, чтобы кнопка показала Alert
+            throw error;
         }
     }
 
