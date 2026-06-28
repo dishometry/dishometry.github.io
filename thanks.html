@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>О проекте</title>
+    <title>О проекте — Dishometry</title>
     <style>
         :root {
             --primary-color: #4a90e2;
             --bg-color: #f5f7fa;
             --text-color: #333;
             --text-muted: #555;
-            --text-light: #888;
         }
 
         body {
@@ -35,18 +34,21 @@
         h1 { color: var(--primary-color); font-size: 24px; margin: 0 0 25px 0; }
         h2 { margin: 30px 0 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 18px; color: #222; }
         
-        p { font-size: 15px; color: var(--text-muted); margin: 0 0 15px 0; }
-        p:last-child { margin-bottom: 0; }
+        p, li { font-size: 15px; color: var(--text-muted); margin: 0 0 15px 0; }
+        p:last-child, ul:last-child { margin-bottom: 0; }
+        
+        ul { padding-left: 20px; margin: 0 0 15px 0; }
+        li { margin-bottom: 8px; }
+        li:last-child { margin-bottom: 0; }
+
+        strong { color: var(--text-color); font-weight: 600; }
 
         a { color: var(--primary-color); text-decoration: none; }
         a:hover { text-decoration: underline; }
         
         .back-link { font-weight: 500; display: inline-block; margin-bottom: 20px; }
-
         .credit-block { margin-bottom: 20px; }
-        .credit-role { font-weight: 600; color: #444; margin-bottom: 5px; }
 
-        /* Mobile adaptation */
         @media (max-width: 600px) {
             body { padding: 10px; }
             .container { padding: 20px; }
@@ -59,11 +61,11 @@
         
         <h1>О проекте</h1>
         
-    <p><strong>Dishometry</strong> задумывался как максимально простой и минималистичный инструмент для тех, кто следит за питанием. Главная идея проекта — дать возможность легко сохранять любимые рецепты и делиться ими в один клик без регистраций и скачивания приложений. А еще — избавить от головной боли при расчете калорийности готового блюда (с учетом уварки и ужарки) и позволить добавлять свои собственные продукты прямо на лету, не заполняя нудные анкеты.</p>
+        <p><strong>Dishometry</strong> задумывался как максимально простой и минималистичный инструмент для тех, кто следит за питанием. Главная идея проекта — дать возможность легко сохранять любимые рецепты и делиться ими в один клик без регистраций и скачивания приложений. А еще — избавить от головной боли при расчете калорийности готового блюда (с учетом уварки и ужарки) и позволить добавлять свои собственные продукты прямо на лету, не заполняя нудные анкеты.</p>
 
         <h2>Спасибо этим замечательным людям!</h2>
         <div class="credit-block">
-            <p>Проект <strong>Dishometry</strong> не появился бы на свет (или был бы гораздо хуже), если бы не помощь, советы и поддержка этих людей:</p>
+            <p>Проект не появился бы на свет (или был бы гораздо хуже), если бы не помощь, советы и поддержка этих людей:</p>
             <ul>
                 <li><strong>Артем М.</strong> — за идею названия домена.</li>
                 <li><strong>Анна В.</strong> — за юридическую консультацию.</li>
